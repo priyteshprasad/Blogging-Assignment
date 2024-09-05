@@ -84,4 +84,20 @@ const loginController = async (req, res) => {
   
 };
 
-module.exports = { registerController, loginController };
+const logoutController = (req, res) => {
+  req.session.destroy((err) => {
+    if (err)
+      return res.send({
+        status: 400,
+        message: "Logout unnsuccessfull",
+        error: err,
+      });
+
+    return res.send({
+      status: 200,
+      message: "Logout successfull",
+    });
+  });
+};
+
+module.exports = { registerController, loginController, logoutController };

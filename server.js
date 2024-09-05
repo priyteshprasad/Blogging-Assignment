@@ -10,6 +10,7 @@ const authRouter = require("./routers/authRouter.js");
 const db = require("./db-connect"); //as soon as this file is imported it will run the code to connect mongodb
 const isAuth = require("./middlewares/isAuth.js");
 const blogRouter = require("./routers/blogRouter.js");
+const followRouter = require("./routers/followRouter.js");
 
 
 // constants
@@ -36,7 +37,8 @@ app.use(
 app.use("/auth", authRouter)
 // out rout will be like localhost:8000/auth/login
 app.use("/blog", isAuth, blogRouter);
-
+// isAuth will be applied to all the routes inside blogsRouter
+app.use("/follow",isAuth, followRouter)
 
 app.listen(PORT, ()=>{
     console.log(clc.yellowBright.bold(`selver is running on port ${PORT}`))

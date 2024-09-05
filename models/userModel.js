@@ -1,5 +1,5 @@
 const userSchema = require("../schemas/userSchema");
-
+const {ObjectId} = require("mongodb");
 const User = class {
   constructor({ email, username, password, name }) {
     this.name = name;
@@ -25,7 +25,8 @@ const User = class {
             return reject("Email and Username already exists");
           if (existingUser.username === this.username)
             return reject("Username already exists");
-          if (existingUser.email === this.email) return reject("Email already exists");
+          if (existingUser.email === this.email)
+            return reject("Email already exists");
         }
 
         //   make unique entry in database
@@ -43,23 +44,26 @@ const User = class {
     });
   }
 
-  loginUser(){
-
-  }
+  loginUser() {}
   // static so that we can call it using User class
-  static findUserWithKey({key}){
-    return new Promise(async (resolve, reject)=>{
+  static findUserWithKey({ key }) {
+    return new Promise(async (resolve, reject) => {
       try {
-        if(!key) reject("Key is empty")
-        const userDb = await userSchema.findOne({
-          $or: [{email: key}, {username: key}]
-        }).select("+password");
-        if(!userDb) reject("User not found, please register first")
-        resolve(userDb)
+        if (!key) reject("Key is empty");
+        const userDb = await userSchema
+          .findOne({
+            $or: [
+              ObjectId.isValid(key) ? { _id: key } : { email: key },
+              { username: key },
+            ],
+          })
+          .select("+password");
+        if (!userDb) reject("User not found, please register first");
+        resolve(userDb);
       } catch (error) {
-          reject(error)
+        reject(error);
       }
-    })
+    });
   }
 };
 
