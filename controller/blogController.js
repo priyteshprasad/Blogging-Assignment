@@ -1,11 +1,11 @@
 const { createBlog, getBlogs, getMyBlogs , getBlogById, editBlogById, deleteBlogWithId} = require("../models/blogModel");
+const { getFollowingList } = require("../models/followModel");
 const { blogDataValidation } = require("../utils/blogUtils");
 
 const createBlogController = async (req, res) => {
   console.log(req.body);
   const { title, textBody } = req.body;
   const userId = req.session.user.userId;
-
   try {
     await blogDataValidation({ title, textBody });
   } catch (error) {
@@ -33,9 +33,12 @@ const createBlogController = async (req, res) => {
 // blogs/get-blogs?skip=10
 const getBlogsController = async (req, res) => {
   const SKIP = Number(req.query.skip) || 0;
-  
+  const followerUserId = req.session.user.userId;
+
   try {
-    const blogsDb = await getBlogs({ SKIP });
+    const followingUsersList = await getFollowingList({SKIP, followerUserId})
+    const followingUsersIdList = followingUsersList.map(user => user._id)
+    let blogsDb = await getBlogs({ SKIP, followingUsersIdList });
     if (blogsDb.length === 0) {
       return res.send({
         status: 204,
@@ -48,6 +51,7 @@ const getBlogsController = async (req, res) => {
       data: blogsDb,
     });
   } catch (error) {
+    console.log("error", error)
     return res.send({
       status: 500,
       message: "Internal server error",

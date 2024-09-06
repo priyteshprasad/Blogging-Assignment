@@ -1,6 +1,5 @@
 // ALL THE FUNCTION THAT INTERACT WITH THE DATA BASE
 
-
 const { LIMIT } = require("../privateConstants");
 const blogSchema = require("../schemas/blogSchema");
 const ObjectId = require("mongodb").ObjectId;
@@ -21,14 +20,30 @@ const createBlog = ({ title, textBody, userId }) => {
     }
   });
 };
-const getBlogs = ({ SKIP }) => {
+const getBlogs = ({ SKIP, followingUsersIdList }) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const blogsDb = await blogSchema.aggregate([
+      let blogsDb = await blogSchema.aggregate([
+        // finding blogs created by the following users
+        {
+          $match: {
+            userId: { $in: followingUsersIdList },
+            isDeleted: { $ne: true }, //$ne => not equals, we use it because, in db there are data where isDeleted not present to compare
+          },
+        },
         { $sort: { creationDateTime: -1 } }, //-1 DESC
         { $skip: SKIP },
         { $limit: LIMIT },
       ]);
+      if (blogsDb.length === 0) {
+        // finding blogs created by other users
+        blogsDb = await blogSchema.aggregate([
+          { $match: { userId: { $nin: followingUsersIdList }, isDeleted: { $ne: true },} },
+          { $sort: { creationDateTime: -1 } }, //-1 DESC
+          { $skip: SKIP },
+          { $limit: LIMIT },
+        ]);
+      }
       resolve(blogsDb);
     } catch (error) {
       reject(error);
@@ -39,7 +54,7 @@ const getMyBlogs = ({ SKIP, userId }) => {
   return new Promise(async (resolve, reject) => {
     try {
       const myBlogsDb = await blogSchema.aggregate([
-        { $match: { userId: userId } },
+        { $match: { userId: userId, isDeleted: { $ne: true } } },
         { $sort: { creationDateTime: -1 } }, //-1 DESC //sort will get the output of previous match function and so on
         { $skip: SKIP }, //skip will get the output of sort
         { $limit: LIMIT },
@@ -85,10 +100,14 @@ const deleteBlogWithId = ({ blogId }) => {
   return new Promise(async (resolve, reject) => {
     if (!blogId) reject("BlogId is missing");
     try {
-      const deletedBlogDb = await blogSchema.findOneAndDelete({ _id: blogId });
-      resolve(deletedBlogDb)
+      // const deletedBlogDb = await blogSchema.findOneAndDelete({ _id: blogId });
+      const deletedBlogDb = await blogSchema.findOneAndUpdate(
+        { _id: blogId },
+        { isDeleted: true, deletionDateTime: Date.now() }
+      );
+      resolve(deletedBlogDb);
     } catch (error) {
-      reject(error)
+      reject(error);
     }
   });
 };

@@ -11,6 +11,7 @@ const db = require("./db-connect"); //as soon as this file is imported it will r
 const isAuth = require("./middlewares/isAuth.js");
 const blogRouter = require("./routers/blogRouter.js");
 const followRouter = require("./routers/followRouter.js");
+const cleanUpBin = require("./cron.js");
 
 
 // constants
@@ -42,4 +43,5 @@ app.use("/follow",isAuth, followRouter)
 
 app.listen(PORT, ()=>{
     console.log(clc.yellowBright.bold(`selver is running on port ${PORT}`))
+    cleanUpBin()
 })
