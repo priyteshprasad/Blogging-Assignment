@@ -22,6 +22,10 @@ const userSchema = new Schema({
         required: true,
         type: String,
         select: false,// when we retrive any user from the DB, password wont be there
+    },
+    isEmailVerified:{
+        type: Boolean,
+        default: false
     }
 })
 

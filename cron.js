@@ -2,7 +2,7 @@ const cron = require("node-cron");
 const blogSchema = require("./schemas/blogSchema");
 
 function cleanUpBin() {
-  cron.schedule("* * 0 * * *", async () => {
+  cron.schedule("0 0 * * * ", async () => {
     // 12 O click at night every day
     console.log("Scheduled tast ran");
     // get all the blogs which has been marked as deleted

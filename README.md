@@ -25,3 +25,12 @@ we never delete data from the database, but marked it as deleted to remove from 
 * : sun-wed
 * represent everyday
 
+
+nodemailler
+never use the personal email for mail
+1. transporter: gmail, yahoo, rediff, auth {mail and password}
+2. mail option: from, to, sub, text
+two step auth should be off or a temperory password can be used
+
+465 is the secure port
+nodemailer.com and w3school
